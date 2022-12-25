@@ -43,7 +43,9 @@ const userSchema = new Schema(
         otp : {
             type : Number,
             default : '8989'
-        }
+        },
+        
+        products : [{type : Schema.Types.ObjectId, ref: "Product"}]
     },
 
     {

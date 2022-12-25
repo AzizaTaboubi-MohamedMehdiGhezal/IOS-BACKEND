@@ -22,10 +22,10 @@ export async function register (req, res, next) {
  const emailValid = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
   try {  
   const { fullname, email, password, numTel} = req.body
-  let profilepic;
+ let profilepic;
   if (req.file) {
-      profilepic = req.file.profilepic
-    }
+     profilepic = req.file.profilepic
+   }
 
   console.log(fullname,email)
  
@@ -34,44 +34,51 @@ export async function register (req, res, next) {
           email &&
           password &&
           numTel 
-          
         ))
          {
-        res.status(400).send('Required Inputs')
+        //res.status(400).send('Required Inputs')
+        console.log("inputs required")
+        return res.status(400).send({ message:'Required Inputs'})
       }
 
       if (emailValid.test(email) == false) {
-        res.status(400).send('email invalid')
-        return
+        console.log("email invalid")
+        return res.status(400).send({message:'email invalid'}) 
+        //res.status(400).send('email invalid')
+        //return
       }
   
       //checking the existance of user
     if (await User.findOne({ email })) {
-        res.status(403).send({ message: "User already exist !" })
+      return  res.status(403).send({ message: "User already exist !" })
       } else {
 
     let user = await new User({
         fullname,
-        profilepic,
+        profilepic: "localhost:9092/img/"+profilepic+".png",
         email,
-        password,
+        password:await bcrypt.hash(password, 10),
         numTel: req.body.numTel,
-        role: req.body.role
+        otp:parseInt(Math.random()*10000),
+        role: "ROLE_USER", //req.body.role,
+        isVerified: true
     })
     user.save()
     .then(user => {
-        res.json({
+      sendEmailtest(user.email,user.otp)
+       return res.json({
             message: 'User added successfully!'
         })
     })
     .catch(error => {
-        res.json({
-            message: error
+       return res.json({
+            message: 'An error occured!'
         })
     })
-}res.send(user)
+}//res.send(user)
 } catch (err) {
   console.log(err)
+  return res.send(err)
 }
 }
 
@@ -79,6 +86,7 @@ export async function register (req, res, next) {
 //Login
 export async function login (req, res)  {
     const { email, password } = req.body
+    console.log("email", email)
     if (!(email && password)) {
       res.status(400).send('Required Input')
     }
@@ -90,14 +98,14 @@ export async function login (req, res)  {
       const token = generateUserToken(user)
   
       if (!user.isVerified) {
-        res.status(403).send({ user, message: "email non verifié" })
+        return res.status(403).send({ user, message: "email non verifié" })
       } else {
         dotenv.config()
         
-        res.status(200).send({ token, user, message: "success" })
+        return res.status(200).send({ token, user, message: "success" })
       }
     } else {
-      res.status(403).send({ message: "mot de passe ou email incorrect" })
+        return res.status(403).send({ message: "mot de passe ou email incorrect" })
     }
   }
 
@@ -167,7 +175,7 @@ export function index (req, res, next)  {
 
 // Show single user
 export function show (req, res, next ) {
-    let userID = req.body._id 
+    let userID = req.body._id    
     User.findById(userID)
     .then(response => {
         res.json({
@@ -371,7 +379,7 @@ export async function updatePassword  (req, res)  {
     let OTP = otpGenerator.generate(4,{upperCaseAlphabets:false,specialChars:false,digits:true,lowerCaseAlphabets:false})
     const user = await User.findOneAndUpdate({ email: req.body.email,otp: OTP})
     if (user) {
-      await sendOTP(req.body.email)
+      sendEmailtest(req.body.email, OTP)
       res.status(200).send({
         message: "L'email de reinitialisation a été envoyé a " + user.email,
       })
@@ -435,12 +443,65 @@ export async function updatePassword  (req, res)  {
           res.status(400).json({"error": "error"})
         }
   }
+
+  export async function confirmationOTP1(req,res) {
+    const user = await User.findOne({ email: req.body.email ,otp: req.body.otp })
+      if (user) {
+          res.status(200).json({"message" : "success"})
+      } else {
+        res.status(400).json({"error": "error"})
+      }
+}
+  export async function resetPassword(req,res) {
+    const email = req.body.email
+    const newPass = req.body.newPass
+    const otp = req.body.otp
+    const user = await User.findOne({ email: email ,otp: otp })
+      if (user) {
+          user.password = await bcrypt.hash(newPass, 10)
+          user.save().then(() => {
+            res.status(200).json({"message": "user password changed"})
+          }).catch(() => {
+            res.status(400).json({"error": "error"})
+          })
+      } else {
+        res.status(400).json({"error": "error"})
+      }
+  }
+
+
   ///// FUNCTIONS ---------------------------------------------------------
 
 function generateUserToken(user) {
     return jwt.sign({ user }, process.env.JWT_SECRET, {
       expiresIn: "100000000",// in Milliseconds (3600000 = 1 hour)
     })
+  }
+
+  const sendEmailtest = (email,otp)=>{
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'savysy22@gmail.com',
+        pass: 'elakojhhgycdbwuq' //Savy12345
+      }
+    });
+    
+    const mailOptions = {
+      from: 'savysy22@gmail.com',
+      to: email,
+      subject: 'Verification du compte',
+      text: `Email content : ${otp}`
+    };
+    
+    transporter.sendMail(mailOptions, function(error, info){
+      if (error) {
+     console.log(error);
+      } else {
+        console.log('Email sent: ' + info.response);
+        // do something useful
+      }
+    });
   }
 
 /*

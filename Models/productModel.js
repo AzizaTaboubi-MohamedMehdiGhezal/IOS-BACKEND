@@ -10,44 +10,76 @@ const {Schema, model} = mongoose;
 //creer votre schema qui decrit a quoi ressemblera chaque doc
 const productSchema = new Schema(
     {
-      
+        userID: {
+            type: String,
+            required: false,
+        },
+        nom: { 
+            type: String,
+            required: true,
+        },
         prix: { 
             type: Number,
-            required: true, },
+            required: true,
+        },
         image: { 
-                type: String,
-                required: true, },
+           type: String,
+           required: false,
+             },
+
+        promo: { 
+            type: Number,
+            required: false, 
+            default: null,
+        },
         
-        etat: {type: Etat,
+        etat: {type: String,
             enum: {
-                values: ['Nouveau', 'Occasion'],
+                values: ['Nouveau', 'Occasion','Etat neuf','Jamais servi'],
                 message: '{VALUE} is not supported'
         } },
 
         marque: {
             type: String,
-            required: true,},
+            required: true,
+        },
 
         boutique: {
             type: String,
-            required: true, },
+            required: false, 
+        },
 
         annee: {
-            type: Date,
-            required: true, },
+            type: Number,
+            required: true, 
+        },
+
         description: {
             type: String,
            required: false,
         },
 
         type: { 
-            type: Type,
+            type: String,
             enum: {
-                values: ['tablette', 'camera', 'console', 'dsktop', 'mouse', 'audio', 'laptop', 'mobile', 'keyboard', 'smartwatch', 'tv', 'fridge'],
+                values: ['tablette', 'camera', 'console', 'desktop', 'mouse', 'audio', 'laptop', 'mobile', 'keyboard', 'smartwatch', 'tv', 'fridge', 'other'],
                 message: '{VALUE} is not supported'
-        }
+                 }
          },
 
+         city: { 
+            type: String,
+            enum: {
+                values: ['Ariana', 'Beja', 'Ben Arous', 'Bizerte', 'Gabes', 'audio', 'Gafsa', 'Jendouba', 'Kairouan', 'Kasserine', 'Kebili', 'Kef', 
+                'Mahdia', 'Manouba', 'Medenine', 'Monastir', 'Nabeul', 'Sfax', 'Sidi Bouzid', 'Siliana', 'Sousse', 'Tataouine', 'Tozeur', 'Tunis', 'Zaghouan'],
+                message: '{VALUE} is not supported'
+                }
+         },
+
+         owner : {
+            type : Schema.Types.ObjectId,
+            ref: 'User',
+            },
        
     },
 
