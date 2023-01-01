@@ -32,6 +32,7 @@ const userSchema = new Schema(
         role: {
             type: String,
             default: 'ROLE_USER',
+            default: 'ROLE_USER',
             enum: {
                 values: ['ROLE_ADMIN', 'ROLE_USER'],
                 message: '{VALUE} is not supported'
@@ -43,7 +44,9 @@ const userSchema = new Schema(
         otp : {
             type : Number,
             default : '8989'
-        }
+        },
+        
+        products : [{type : Schema.Types.ObjectId, ref: "Product"}]
     },
 
     {

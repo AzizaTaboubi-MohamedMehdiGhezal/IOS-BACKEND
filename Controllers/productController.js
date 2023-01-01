@@ -1,5 +1,7 @@
+import { token } from 'morgan';
 import Product from '../Models/productModel.js'
-import User from '../Models/UserModel.js'
+import jwt from 'jsonwebtoken'
+import UserModel from '../Models/UserModel.js';
 
 //add
 export async function addNewProduct(req, res) {
@@ -56,28 +58,28 @@ export async function UpdateProduct(req, res) {
   console.log(description)
   console.log("id = ",req.body._id)
  try {
-    let obj = {
-      nom: nom,
-      prix: prix,
-      etat: etat,
-      marque: marque,
-      boutique: boutique,
-      annee: annee,
-      description: description,
-      type: type,
-      city: city
+  let obj = {
+    nom: nom,
+    prix: prix,
+    etat: etat,
+    marque: marque,
+    boutique: boutique,
+    annee: annee,
+    description: description,
+    type: type,
+    city: city
+  }
+  if (req.file) {
+    obj.image = req.file.filename
+  }
+  let product = await Product.findOneAndUpdate(
+    { _id: req.body._id},
+    {
+      $set: obj
     }
-    if (req.file) {
-      obj.image = req.file.filename
-    }
-    let product = await Product.findOneAndUpdate(
-      { _id: req.body._id},
-      {
-        $set: obj
-      }
-    )
-     console.log(product);
-    await res.status(200).send("Product updated")
+  )
+   console.log(product);
+  await res.status(200).send("Product updated")
   } catch (e) {
     return res.status(400).json({ "error": e })
   }
@@ -129,6 +131,7 @@ export async function recupererParType  (req, res)  {
 
 }
 
+
 //recherche produit d'occase
 export async function rechercheProduitOccasion (req,res){
   //var Prod =await Product.find().populate('marque','type','anne','city')
@@ -157,6 +160,35 @@ export async function rechercheProduitOccasion (req,res){
   }
 }
 
+//Afficher produits par user
+
+export async function getAllProducts (req, res) {
+  var token = req.body.token
+  let Token = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+  var Products =await Product.find()
+  
+  if (Token) {
+    try {
+        let Token = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+        let userId = Token.user._id
+        var userP
+        if (true){
+          userP = Products.filter( Product => {
+            let isValid = true
+              console.log(Product);
+              isValid = isValid && Product.owner == userId
+            return isValid
+          })     
+          res.status(200).send(userCars)
+        } else {
+          console.log("erreur");
+        }        
+    } catch (e) {
+      return res.status(400).json({"error1" : e})
+    }
+  } else {
+    return res.status(400).json({"error2" : "erreur2"})
+  }}
 
 //RECHERCHE SORT AND MORE
 
@@ -226,6 +258,7 @@ export  async function deletee (req, res) {
     res.send({ message: "All products have been deleted" })
   }
 
+  
   export async function getBrandsOfAModel(req, res) {
     let type = req.query.type
     let products = await Product.find({type})

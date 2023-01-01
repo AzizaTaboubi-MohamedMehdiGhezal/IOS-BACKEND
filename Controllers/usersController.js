@@ -79,6 +79,7 @@ export async function register (req, res, next) {
 } catch (err) {
   console.log(err)
   return res.send(err)
+  return res.send(err)
 }
 }
 
@@ -110,6 +111,54 @@ export async function login (req, res)  {
     }
   }
 
+  //Facebook Authentication
+
+  const FacebookStrategy = strategy.Strategy;
+
+  dotenv.config();
+  passport.serializeUser(function(user, done) {
+    done(null, user);
+  });
+  
+  passport.deserializeUser(function(obj, done) {
+    done(null, obj);
+  });
+  
+  passport.use(
+    new FacebookStrategy(
+      {
+        clientID: process.env.FACEBOOK_CLIENT_ID,
+        clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+        callbackURL: process.env.FACEBOOK_CALLBACK_URL,
+        profileFields: ["email", "name"]
+      },
+      function(accessToken, refreshToken, profile, done) {
+        const { email, first_name } = profile._json;
+        const userData = {
+          email,
+          fullname: first_name
+        };
+        new User(userData).save();
+        done(null, profile);
+      }
+    )
+  );
+
+  //Login Google //"http://www.example.com/auth/google/callback"
+
+  var GoogleStrategy = strat.Strategy;
+
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: process.env.GOOGLE_CALLBACK_URL
+  },
+  function(accessToken, refreshToken, profile, cb) {
+    User.findOrCreate({ googleId: profile.id }, function (err, user) {
+      return cb(err, user);
+    });
+  }
+));
   //Facebook Authentication
 
   const FacebookStrategy = strategy.Strategy;

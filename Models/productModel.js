@@ -24,7 +24,7 @@ const productSchema = new Schema(
         },
         image: { 
            type: String,
-           required: true,
+           required: false,
              },
 
         promo: { 
@@ -76,6 +76,10 @@ const productSchema = new Schema(
                 }
          },
 
+         owner : {
+            type : Schema.Types.ObjectId,
+            ref: 'User',
+            },
        
     },
 

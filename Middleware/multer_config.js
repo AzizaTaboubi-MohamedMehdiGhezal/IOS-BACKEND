@@ -10,6 +10,18 @@ const MIME_TYPES = {
     "image/png": "png",
 
 };
+import multer, { diskStorage } from "multer"; // Importer multer
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+
+// Les extensions & accepter
+
+const MIME_TYPES = {
+    "image/jpg": "jpg",
+    "image/jpeg": "jpg",
+    "image/png": "png",
+
+};
 
 export default multer({
     //Configuration de stockage
