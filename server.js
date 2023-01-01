@@ -1,8 +1,10 @@
 import express from 'express';
 import mongoose from 'mongoose'; //Importer Mongoose
 import user from './Routes/user.js';
-
-
+import produit from './Routes/produit.js';
+import passport from "passport";
+import pkg from 'body-parser';
+const { json } = pkg;
 
 
 const app = express();
@@ -10,6 +12,18 @@ app.use('/images' ,express.static('uploads'))
 const port = process.env.PORT || 9092;
 const databasename = 'MiniProjet';
 
+
+
+
+
+app.use(passport.initialize());
+
+app.use(json());
+
+/*app.listen(port, async () => {
+  await connect();
+  console.log(`Server listening on ${port}`);
+});*/
 
 //cela affichera les requetes MongoDb ds le terminal
 mongoose.set('debug', true);
