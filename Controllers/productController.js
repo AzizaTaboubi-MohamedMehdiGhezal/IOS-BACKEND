@@ -73,10 +73,8 @@ export async function UpdateProduct(req, res) {
     obj.image = req.file.filename
   }
   let product = await Product.findOneAndUpdate(
-    { _id: req.body._id},
-    {
-      $set: obj
-    }
+    {_id: req.body._id},
+    {$set: obj}
   )
    console.log(product);
   await res.status(200).send("Product updated")
@@ -95,7 +93,7 @@ export async function getAll  (req, res) {
   } else {
     res.send({ Products: await Product.find() })
   }
-  }
+}
   
 //Recuperer produit par id
 export async function getByUserID  (req, res)  {
@@ -104,9 +102,9 @@ export async function getByUserID  (req, res)  {
     res.send({
        Products: await Product.find({userID: userID}).exec()
        })
-      else
-      res.send("erreur")
-  }
+  else
+    res.send("erreur")
+}
 
   //Recuperer produits par type
 export async function recupererParType  (req, res)  {
@@ -116,7 +114,6 @@ export async function recupererParType  (req, res)  {
   } catch(err) {
     console.log(err);
   }
-
 }
 
 
@@ -144,13 +141,13 @@ export async function rechercheProduitOccasion (req,res){
   } = req.query
   
   if (annee && city)
-  var produits =await Product.find({type, marque, annee, city, etat: "Occasion", prix: {$gt : prix }})
+    var produits =await Product.find({type, marque, annee, city, etat: "Occasion", prix: {$gt : prix }})
   else if (!annee && city)
-  var produits =await Product.find({type, marque, city, etat: "Occasion", prix: {$gt : prix }})
+    var produits =await Product.find({type, marque, city, etat: "Occasion", prix: {$gt : prix }})
   else if (annee && !city)
-  var produits =await Product.find({type, marque, annee, etat: "Occasion", prix: {$gt : prix }})
+    var produits =await Product.find({type, marque, annee, etat: "Occasion", prix: {$gt : prix }})
   else
-  var produits =await Product.find({type, marque, etat: "Occasion", prix: {$gt : prix }})
+    var produits =await Product.find({type, marque, etat: "Occasion", prix: {$gt : prix }})
 
   
   try{
@@ -175,8 +172,8 @@ export async function getAllProducts (req, res) {
         if (true){
           userP = Products.filter( Product => {
             let isValid = true
-              console.log(Product);
-              isValid = isValid && Product.owner == userId
+            console.log(Product);
+            isValid = isValid && Product.owner == userId
             return isValid
           })     
           res.status(200).send(userCars)
@@ -188,33 +185,33 @@ export async function getAllProducts (req, res) {
     }
   } else {
     return res.status(400).json({"error2" : "erreur2"})
-  }}
+  }
+}
 
 //RECHERCHE SORT AND MORE
 
 export async function rechercherProduit (req, res) {
   try {
-      const search = req.query.search || ""; 
-      let sort = req.query.sort || "nom";
-      let type = req.query.type || "All";
-      type = "All"
-      ?(type=[req.body.type])
-      :(type =req.query.typee.split(","));
-      req.query.sort ? (sort = req.query.sort.split(",")) : (sort = [sort]);
+    const search = req.query.search || ""; 
+    let sort = req.query.sort || "nom";
+    let type = req.query.type || "All";
+    type = "All"
+    ?(type=[req.body.type])
+    :(type =req.query.typee.split(","));
+    req.query.sort ? (sort = req.query.sort.split(",")) : (sort = [sort]);
 
-     // let sortBy = {};
-      if (sort[1]){
-        sortBy[sort[0]] = sort[1];
-      }else {
-        sortBy[sort[0]]="asc";
-      }
-      const produits = await Product.find({ nom: { $regex: search, $options: "i" } })
-			.where("type")
-			.in([...type])
-			.sort(sortBy)
-			.skip(page * limit)
-			.limit(limit);
-
+    // let sortBy = {};
+    if (sort[1]){
+      sortBy[sort[0]] = sort[1];
+    }else {
+      sortBy[sort[0]]="asc";
+    }
+    const produits = await Product.find({ nom: { $regex: search, $options: "i" } })
+    .where("type")
+    .in([...type])
+    .sort(sortBy)
+    .skip(page * limit)
+    .limit(limit);
 		const total = await Product.countDocuments({
 			type: { $in: [...type] },
 			nom: { $regex: search, $options: "i" },
@@ -228,10 +225,7 @@ export async function rechercherProduit (req, res) {
 			type,
 			produits,
 		};
-
 		res.status(200).json(response);
-
-    
   } catch (error) {
     console.log(error);
     
