@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { response } from 'express';
 import mongoose from 'mongoose'; //Importer Mongoose
 import user from './Routes/user.js';
 import produit from './Routes/produit.js';
@@ -33,21 +33,39 @@ mongoose.Promise = global.Promise;
 
 //se connecter a mongodb
 
-mongoose
-   .connect(`mongodb://localhost:27017/${databasename}`)
-   .then(() => {
-    //une fois connectee, afficher un msg de reussite sur la console
-    console.log(`Connected to ${databasename}`);
-   })
-   .catch(err => {
-    //si qlq chose ne va pas, afficher l'err sur la console
-    console.log(err);
-   });
+
+
+mongoose.connect("mongodb+srv://root:root@cluster0.hv3zdlw.mongodb.net/?retryWrites=true&w=majority", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    dbName: 'Savy',
+    
+  })
+  .then(()=> {
+    console.log('DATABASE CONNECTED')
+  })
+  .catch((err) => {
+    console.log(err)
+  })
+  
+
+
+// mongoose
+//    .connect(`mongodb://localhost:27017/${databasename}`)
+//    .then(() => {
+//     //une fois connectee, afficher un msg de reussite sur la console
+//     console.log(`Connected to ${databasename}`);
+//    })
+//    .catch(err => {
+//     //si qlq chose ne va pas, afficher l'err sur la console
+//     console.log(err);
+//    });
 
 
    app.use(express.json());
    app.use('/user', user);
    app.use('/produit', produit);
+   app.get("/ping",(req,res)=>res.send("pong"))
    
    app.listen(port, ()=> {
     console.log(`server running at http://localhost:${port}`);
